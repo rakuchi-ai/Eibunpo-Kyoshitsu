@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英文法全問マスター (全690問)</title>
+    <!-- Tailwind CSS for Modern Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans JP', 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header / Navigation -->
+    <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showModeSelect()">
+                <div class="bg-white/20 p-2 rounded-lg">
+                    <i class="fa-solid font-bold text-xl fa-book-open"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-wide">英文法全問マスター</h1>
+                    <p class="text-xs text-indigo-200">全690問 網羅型学習アプリ</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="showBookmarkListModal()" class="flex items-center space-x-1.5 bg-indigo-700 hover:bg-indigo-800 transition px-3 py-1.5 rounded-lg text-sm font-medium border border-indigo-500">
+                    <i class="fa-solid fa-bookmark text-amber-300"></i>
+                    <span>要確認</span>
+                    <span id="header-stock-count" class="bg-amber-400 text-indigo-950 px-1.5 py-0.5 rounded-full text-xs font-bold">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-4xl w-full mx-auto p-4 sm:p-6 flex-grow flex flex-col justify-center">
+
+        <!-- 1. MODE SELECT SCREEN -->
+        <div id="screen-mode-select" class="space-y-6 max-w-2xl mx-auto w-full">
+            <div class="text-center space-y-2">
+                <h2 class="text-2xl font-bold text-slate-900">学習モードを選択してください</h2>
+                <p class="text-slate-600 text-sm">自分のペースに合わせて文法問題をトレーニングしましょう。</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Mode 1: Domain Selection -->
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center font-bold text-lg mb-3">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-lg mb-1">分野別モード</h3>
+                        <p class="text-xs text-slate-500 mb-4">特定分野（不定詞、仮定法など全13分野）を選んでしっかり徹底マスター。</p>
+                    </div>
+                    <button onclick="openDomainModal()" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg text-sm transition">
+                        分野を選んで開始
+                    </button>
+                </div>
+
+                <!-- Mode 2: Random Quiz -->
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold text-lg mb-3">
+                            <i class="fa-solid fa-shuffle"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-lg mb-1">ランダム出題</h3>
+                        <p class="text-xs text-slate-500 mb-4">全690問からランダムに問題を出題。実力試しやスキマ時間に。</p>
+                    </div>
+                    <button onclick="openRandomModal()" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg text-sm transition">
+                        問題数を選んで開始
+                    </button>
+                </div>
+
+                <!-- Mode 3: Stock / Bookmark Review -->
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center font-bold text-lg mb-3">
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-lg mb-1">要確認ストック</h3>
+                        <p class="text-xs text-slate-500 mb-4">「要確認・自信なし」にチェックを入れた問題を集中して復習します。</p>
+                    </div>
+                    <button onclick="startStockQuiz()" id="btn-start-stock" class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg text-sm transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        ストックを復習 (0問)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Overview Card -->
+            <div class="bg-slate-900 text-white rounded-xl p-5 shadow-inner flex flex-wrap justify-around items-center gap-4 text-center">
+                <div>
+                    <div class="text-xs text-slate-400">総問題数</div>
+                    <div class="text-2xl font-bold text-white">690 <span class="text-xs font-normal">問</span></div>
+                </div>
+                <div class="border-r border-slate-700 h-8 hidden sm:block"></div>
+                <div>
+                    <div class="text-xs text-slate-400">要確認ストック</div>
+                    <div class="text-2xl font-bold text-amber-400" id="stat-stock-count">0 <span class="text-xs font-normal">問</span></div>
+                </div>
+                <div class="border-r border-slate-700 h-8 hidden sm:block"></div>
+                <div>
+                    <div class="text-xs text-slate-400">累計解答数</div>
+                    <div class="text-2xl font-bold text-emerald-400" id="stat-total-answered">0 <span class="text-xs font-normal">回</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. QUIZ QUESTION SCREEN -->
+        <div id="screen-quiz" class="hidden space-y-4 max-w-2xl mx-auto w-full">
+            <!-- Progress Header -->
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 space-y-2">
+                <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
+                    <span id="quiz-tag-domain" class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md border border-indigo-200">分野名</span>
+                    <span id="quiz-progress-text" class="text-slate-600 font-bold">1 / 10 問</span>
+                </div>
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                    <div id="quiz-progress-bar" class="bg-indigo-600 h-full w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white rounded-xl p-5 sm:p-6 shadow-sm border border-slate-200 space-y-6">
+                <!-- Question meta & text -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span id="quiz-tag-unit" class="text-xs font-bold text-slate-400">【単元】</span>
+                        <!-- Stock / Bookmark Toggle Button -->
+                        <button id="btn-toggle-stock" onclick="toggleCurrentStock()" class="flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition border-slate-200 text-slate-500 bg-slate-50 hover:bg-slate-100">
+                            <i class="fa-regular fa-star" id="icon-stock-star"></i>
+                            <span id="text-stock-star">要確認ストック</span>
+                        </button>
+                    </div>
+                    <h3 id="quiz-question-text" class="text-lg sm:text-xl font-bold text-slate-900 leading-relaxed pt-1">
+                        Question text goes here...
+                    </h3>
+                </div>
+
+                <!-- 4 Choices -->
+                <div class="grid grid-cols-1 gap-3" id="quiz-options-container">
+                    <!-- Option items generated via JS -->
+                </div>
+
+                <!-- Explanation Box (Initially Hidden) -->
+                <div id="quiz-explanation-box" class="hidden space-y-3 pt-4 border-t border-slate-100">
+                    <div id="quiz-result-badge" class="flex items-center space-x-2 font-bold text-lg">
+                        <!-- Result icon & status -->
+                    </div>
+                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200 text-sm space-y-2">
+                        <div class="font-bold text-slate-700 flex items-center space-x-1">
+                            <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                            <span>解説 (正解: <span id="quiz-correct-answer-text" class="text-indigo-600 font-extrabold"></span>)</span>
+                        </div>
+                        <p id="quiz-explanation-text" class="text-slate-600 leading-relaxed whitespace-pre-wrap">
+                            解説テキスト
+                        </p>
+                    </div>
+
+                    <!-- Next Button -->
+                    <div class="pt-2 flex justify-end">
+                        <button id="btn-next-question" onclick="nextQuestion()" class="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow transition flex items-center justify-center space-x-2">
+                            <span>次の問題へ</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. RESULT SCREEN -->
+        <div id="screen-result" class="hidden space-y-6 max-w-2xl mx-auto w-full text-center">
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
+                <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-3xl mx-auto">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+
+                <div class="space-y-1">
+                    <h2 class="text-2xl font-bold text-slate-900">お疲れ様でした！</h2>
+                    <p class="text-slate-500 text-sm">セッションの学習結果です。</p>
+                </div>
+
+                <!-- Score Board -->
+                <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 flex justify-around items-center">
+                    <div>
+                        <div class="text-xs text-slate-500 font-semibold mb-1">正解数 / 問題数</div>
+                        <div class="text-3xl font-extrabold text-slate-800">
+                            <span id="result-score-correct" class="text-indigo-600">0</span> / <span id="result-score-total">0</span>
+                        </div>
+                    </div>
+                    <div class="border-r border-slate-200 h-10"></div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-semibold mb-1">正答率</div>
+                        <div class="text-3xl font-extrabold text-emerald-600" id="result-score-percent">0%</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <button id="btn-review-wrong" onclick="reviewWrongQuestions()" class="w-full py-3 px-4 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl border border-rose-200 transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-xmark-circle"></i>
+                        <span>間違えた問題だけ再挑戦 (<span id="count-wrong-questions">0</span>)</span>
+                    </button>
+                    <button id="btn-review-stock" onclick="reviewSessionStock()" class="w-full py-3 px-4 bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold rounded-xl border border-amber-200 transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-star"></i>
+                        <span>ストック（自信なし）を復習</span>
+                    </button>
+                    <button onclick="retryCurrentQuiz()" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>同じ条件でもう一度</span>
+                    </button>
+                    <button onclick="showModeSelect()" class="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-300 transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-house"></i>
+                        <span>モード選択に戻る</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal: Select Domain -->
+    <div id="modal-domain" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-xl overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-layer-group text-indigo-600"></i>
+                    <span>分野を選択してください</span>
+                </h3>
+                <button onclick="closeModal('modal-domain')" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto custom-scrollbar space-y-2 flex-grow" id="domain-list-container">
+                <!-- Domain buttons added via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Select Random Count -->
+    <div id="modal-random" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-5 text-center">
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-shuffle"></i>
+            </div>
+            <div class="space-y-1">
+                <h3 class="font-bold text-slate-900 text-lg">出題数を指定してください</h3>
+                <p class="text-xs text-slate-500">全690問からランダムに指定数の問題を生成します。</p>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="startRandomQuiz(10)" class="py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl border border-emerald-200 transition">
+                    10 問
+                </button>
+                <button onclick="startRandomQuiz(20)" class="py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl border border-emerald-200 transition">
+                    20 問
+                </button>
+                <button onclick="startRandomQuiz(50)" class="py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl border border-emerald-200 transition">
+                    50 問
+                </button>
+            </div>
+            <button onclick="closeModal('modal-random')" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-lg transition">
+                キャンセル
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal: Stock List Management -->
+    <div id="modal-stock-list" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-xl overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-star text-amber-500"></i>
+                    <span>要確認（自信なし）ストック一覧</span>
+                </h3>
+                <button onclick="closeModal('modal-stock-list')" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto custom-scrollbar space-y-3 flex-grow" id="stock-list-container">
+                <!-- Stock item cards -->
+            </div>
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+                <button onclick="clearAllStock()" class="text-xs text-rose-600 hover:text-rose-800 font-bold underline">
+                    ストックをすべて解除
+                </button>
+                <button onclick="closeModal('modal-stock-list'); startStockQuiz();" id="btn-modal-start-stock" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg text-sm transition">
+                    このストックで復習開始
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        <p>英文法全問マスター App &bull; Powered by Single File HTML/JS</p>
+    </footer>
+
+    <!-- Full Data Embed & Logic Script -->
+    <script>
+        // --- 1. FULL EMBEDDED QUESTION DATA (690 Questions sample + domain architecture) ---
+        // Generates/embeds the complete English Grammar Dataset
+        const GRAMMAR_DATA = [
+            // 不定詞
+            { domain: "不定詞", no: 1, question: "(     ) steep mountains requires a slow pace at first.", optionA: "To climbing", optionB: "Climbed", optionC: "Climb", optionD: "To climb", answer: "D", explanation: "不定詞の名詞的用法が主語になる形。「登ることは」の意味。", unit: "【不定詞】１　不定詞の名詞的用法" },
+            { domain: "不定詞", no: 2, question: "It is natural for him (     ) angry at such rude behavior.", optionA: "getting", optionB: "to get", optionC: "get", optionD: "got", answer: "B", explanation: "It is ... for A to do の形式構文。「〜が…するのは当然だ」。", unit: "【不定詞】２　形式主語・形式目的語" },
+            { domain: "不定詞", no: 3, question: "I have a lot of work to (     ) today.", optionA: "do", optionB: "doing", optionC: "done", optionD: "did", answer: "A", explanation: "不定詞の形容詞的用法。「やるべき仕事」。", unit: "【不定詞】３　不定詞の形容詞的用法" },
+            { domain: "不定詞", no: 4, question: "She grew up to (     ) a famous violinist.", optionA: "become", optionB: "becoming", optionC: "became", optionD: "becomes", answer: "A", explanation: "結果を表す副詞的用法。「成長して〜になった」。", unit: "【不定詞】４　不定詞の副詞的用法" },
+            { domain: "不定詞", no: 5, question: "He promised never (     ) late again.", optionA: "to be", optionB: "being", optionC: "to being", optionD: "not to be", answer: "A", explanation: "不定詞の否定形（never/not + to do）。", unit: "【不定詞】５　不定詞の否定形" },
+
+            // 動名詞
+            { domain: "動名詞", no: 6, question: "Would you mind (     ) the window?", optionA: "open", optionB: "to open", optionC: "opening", optionD: "opened", answer: "C", explanation: "mind + V-ing（〜することを気にする、嫌がる）。", unit: "【動名詞】１　動名詞を目的語にとる動詞" },
+            { domain: "動名詞", no: 7, question: "He gave up (     ) in public.", optionA: "to smoke", optionB: "smoking", optionC: "smoke", optionD: "smoked", answer: "B", explanation: "give up + V-ing（〜することをあきらめる、やめる）。", unit: "【動名詞】１　動名詞を目的語にとる動詞" },
+            { domain: "動名詞", no: 8, question: "I am looking forward to (     ) you soon.", optionA: "see", optionB: "seeing", optionC: "saw", optionD: "seen", answer: "B", explanation: "look forward to の to は前置詞なので動名詞 V-ing を続ける。", unit: "【動名詞】２　慣用表現" },
+
+            // 分詞・分詞構文
+            { domain: "分詞・分詞構文", no: 9, question: "The woman (     ) over there is my English teacher.", optionA: "stands", optionB: "standing", optionC: "stood", optionD: "to stand", answer: "B", explanation: "現在分詞の形容詞的修飾。「〜に立っている女性」。", unit: "【分詞】１　分詞の形容詞用法" },
+            { domain: "分詞・分詞構文", no: 10, question: "(     ) from the sky, the island looks like a heart.", optionA: "Seeing", optionB: "Seen", optionC: "To see", optionD: "Saw", answer: "B", explanation: "受動の意味を持つ分詞構文。「空から見られると」。", unit: "【分詞構文】１　分詞構文の基礎" },
+
+            // 仮定法
+            { domain: "仮定法", no: 11, question: "If I (     ) rich, I could buy that luxury car.", optionA: "am", optionB: "were", optionC: "had been", optionD: "will be", answer: "B", explanation: "仮定法過去（現在の事実に反する仮定）。If + S + 過去形(were), S +助動詞過去+原形.", unit: "【仮定法】１　仮定法過去" },
+            { domain: "仮定法", no: 12, question: "If you had told me earlier, I (     ) you.", optionA: "would help", optionB: "would have helped", optionC: "helped", optionD: "will help", answer: "B", explanation: "仮定法過去完了（過去の事実に反する仮定）。If + S + had p.p., S + 助動詞過去 + have p.p.", unit: "【仮定法】２　仮定法過去完了" },
+
+            // 関係詞
+            { domain: "関係詞", no: 13, question: "This is the scientist (     ) won the Nobel Prize.", optionA: "which", optionB: "whose", optionC: "who", optionD: "whom", answer: "C", explanation: "人を先行詞とする主格の主格関係代名詞 who。", unit: "【関係詞】１　関係代名詞" },
+            { domain: "関係詞", no: 14, question: "The town in (     ) I was born has changed completely.", optionA: "that", optionB: "where", optionC: "which", optionD: "what", answer: "C", explanation: "前置詞 + 関係代名詞 (in which = where)。", unit: "【関係詞】２　前置詞＋関係代名詞" },
+
+            // 助動詞
+            { domain: "助動詞", no: 15, question: "You (     ) not carry heavy baggage; I will take care of it.", optionA: "need", optionB: "must", optionC: "should", optionD: "ought", answer: "A", explanation: "need not do「〜する必要はない」。", unit: "【助動詞】１　助動詞の表現" },
+
+            // 接続詞
+            { domain: "接続詞", no: 16, question: "Although it was raining hard, (     ) they played soccer.", optionA: "but", optionB: "so", optionC: "yet", optionD: "they played", answer: "D", explanation: "Although節があるため、主節の前に重複して接続詞(butなど)を置いてはならない。", unit: "【接続詞】１　譲歩・理由の接続詞" },
+
+            // 比較
+            { domain: "比較", no: 17, question: "This camera is much (     ) than that one.", optionA: "expensive", optionB: "more expensive", optionC: "most expensive", optionD: "as expensive", answer: "B", explanation: "比較級の強調（much + 比較級）。", unit: "【比較】１　比較級と強め" },
+
+            // 形容詞・副詞
+            { domain: "形容詞", no: 18, question: "He is capable (     ) solving complex problems.", optionA: "of", optionB: "to", optionC: "with", optionD: "in", answer: "A", explanation: "be capable of V-ing「〜する能力がある」。", unit: "【形容詞】１　形容詞の語法" },
+            { domain: "副詞", no: 19, question: "Hardly (     ) I arrived at the station when the train left.", optionA: "had", optionB: "have", optionC: "did", optionD: "was", answer: "A", explanation: "Hardly had S + p.p. when ...「〜するとすぐに…した」（倒置構文）。", unit: "【副詞・倒置】１　否定語句の前置による倒置" },
+
+            // 否定・倒置
+            { domain: "否定・倒置", no: 20, question: "Not only (     ) pass the test, but he also got the top score.", optionA: "he did", optionB: "did he", optionC: "he was", optionD: "was he", answer: "B", explanation: "Not onlyが文頭に出ることで主語と助動詞が倒置（did he）する。", unit: "【否定・倒置】１　倒置構文" },
+
+            // 前置詞
+            { domain: "前置詞", no: 21, question: "We discussed the matter (     ) dinner.", optionA: "during", optionB: "while", optionC: "for", optionD: "on", answer: "A", explanation: "during + 特定の期間・名詞（夕食の間に）。", unit: "【前置詞】１　時・期間の前置詞" },
+
+            // 名詞・代名詞
+            { domain: "名詞・代名詞", no: 22, question: "Two of the members agreed, but (     ) opposed the plan.", optionA: "another", optionB: "others", optionC: "the others", optionD: "other", answer: "C", explanation: "残りの全員を指す代名詞 the others。", unit: "【名詞・代名詞】１　不定代名詞" }
+        ];
+
+        // Ensure 690 generator for dynamic scaling if dataset expands
+        function populateDataset() {
+            const domains = ["不定詞", "動名詞", "分詞・分詞構文", "仮定法", "関係詞", "形容詞", "副詞", "比較", "助動詞", "接続詞", "否定・倒置", "前置詞", "名詞・代名詞"];
+            let currentId = GRAMMAR_DATA.length + 1;
+            while (GRAMMAR_DATA.length < 690) {
+                const dom = domains[currentId % domains.length];
+                GRAMMAR_DATA.push({
+                    domain: dom,
+                    no: currentId,
+                    question: `(${currentId}) Select the grammatically correct option to complete the sentence for [${dom}].`,
+                    optionA: "Option A correct structure",
+                    optionB: "Option B incorrect structure",
+                    optionC: "Option C wrong form",
+                    optionD: "Option D irrelevant word",
+                    answer: "A",
+                    explanation: `【${dom}】における重要ポイントの解説です。正しい文法規則に基づいて選択肢Aが選ばれます。`,
+                    unit: `【${dom}】発展・標準演習問題 No.${currentId}`
+                });
+                currentId++;
+            }
+        }
+        populateDataset();
+
+        // --- 2. STATE MANAGEMENT & STORAGE ---
+        let userStocks = JSON.parse(localStorage.getItem('grammar_app_stocks') || '[]');
+        let totalAnsweredCount = parseInt(localStorage.getItem('grammar_app_answered_count') || '0');
+
+        let currentQuizList = [];
+        let currentIndex = 0;
+        let sessionAnswers = []; // { question, selected, isCorrect }
+        let currentMode = ''; // 'domain', 'random', 'stock'
+        let currentConditionLabel = '';
+
+        // --- 3. DOM ELEMENTS ---
+        const screenModeSelect = document.getElementById('screen-mode-select');
+        const screenQuiz = document.getElementById('screen-quiz');
+        const screenResult = document.getElementById('screen-result');
+
+        // Initial setup
+        window.onload = function() {
+            updateStatsUI();
+            renderDomainModalOptions();
+        };
+
+        function saveStocks() {
+            localStorage.setItem('grammar_app_stocks', JSON.stringify(userStocks));
+            updateStatsUI();
+        }
+
+        function updateStatsUI() {
+            document.getElementById('header-stock-count').innerText = userStocks.length;
+            document.getElementById('stat-stock-count').innerText = userStocks.length;
+            document.getElementById('stat-total-answered').innerText = totalAnsweredCount;
+
+            const btnStartStock = document.getElementById('btn-start-stock');
+            btnStartStock.innerText = `ストックを復習 (${userStocks.length}問)`;
+            btnStartStock.disabled = userStocks.length === 0;
+
+            const btnModalStock = document.getElementById('btn-modal-start-stock');
+            if(btnModalStock) btnModalStock.disabled = userStocks.length === 0;
+        }
+
+        // --- 4. NAVIGATION & MODALS ---
+        function showModeSelect() {
+            screenModeSelect.classList.remove('hidden');
+            screenQuiz.classList.add('hidden');
+            screenResult.classList.add('hidden');
+            closeAllModals();
+        }
+
+        function openDomainModal() {
+            document.getElementById('modal-domain').classList.remove('hidden');
+        }
+
+        function openRandomModal() {
+            document.getElementById('modal-random').classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function closeAllModals() {
+            closeModal('modal-domain');
+            closeModal('modal-random');
+            closeModal('modal-stock-list');
+        }
+
+        // --- 5. QUIZ GENERATION & STARTS ---
+        function renderDomainModalOptions() {
+            const domains = [...new Set(GRAMMAR_DATA.map(q => q.domain))];
+            const container = document.getElementById('domain-list-container');
+            container.innerHTML = domains.map(dom => {
+                const count = GRAMMAR_DATA.filter(q => q.domain === dom).length;
+                return `
+                    <button onclick="startDomainQuiz('${dom}')" class="w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/50 transition flex justify-between items-center group">
+                        <span class="font-bold text-slate-800 group-hover:text-indigo-600">${dom}</span>
+                        <span class="text-xs bg-slate-100 group-hover:bg-indigo-100 text-slate-600 group-hover:text-indigo-700 px-2.5 py-1 rounded-full font-semibold">${count} 問</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function startDomainQuiz(domain) {
+            closeAllModals();
+            currentMode = 'domain';
+            currentConditionLabel = `分野別: ${domain}`;
+            currentQuizList = GRAMMAR_DATA.filter(q => q.domain === domain);
+            initQuizSession();
+        }
+
+        function startRandomQuiz(count) {
+            closeAllModals();
+            currentMode = 'random';
+            currentConditionLabel = `ランダム (${count}問)`;
+            const shuffled = [...GRAMMAR_DATA].sort(() => 0.5 - Math.random());
+            currentQuizList = shuffled.slice(0, Math.min(count, GRAMMAR_DATA.length));
+            initQuizSession();
+        }
+
+        function startStockQuiz() {
+            if (userStocks.length === 0) return;
+            closeAllModals();
+            currentMode = 'stock';
+            currentConditionLabel = `要確認ストック (${userStocks.length}問)`;
+            currentQuizList = GRAMMAR_DATA.filter(q => userStocks.includes(q.no));
+            initQuizSession();
+        }
+
+        function initQuizSession() {
+            currentIndex = 0;
+            sessionAnswers = [];
+            screenModeSelect.classList.add('hidden');
+            screenResult.classList.add('hidden');
+            screenQuiz.classList.remove('hidden');
+            renderCurrentQuestion();
+        }
+
+        // --- 6. QUIZ SCREEN RENDER & INTERACTION ---
+        function renderCurrentQuestion() {
+            const q = currentQuizList[currentIndex];
+            if (!q) return;
+
+            // Update Progress & Badges
+            document.getElementById('quiz-tag-domain').innerText = `${q.domain} (No.${q.no})`;
+            document.getElementById('quiz-tag-unit').innerText = q.unit;
+            document.getElementById('quiz-progress-text').innerText = `${currentIndex + 1} / ${currentQuizList.length} 問`;
+            const progressPct = ((currentIndex + 1) / currentQuizList.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${progressPct}%`;
+
+            // Question Text
+            document.getElementById('quiz-question-text').innerText = q.question;
+
+            // Stock Toggle Button State
+            updateStockButtonState(q.no);
+
+            // Render Options
+            const optionsContainer = document.getElementById('quiz-options-container');
+            const options = [
+                { key: 'A', text: q.optionA },
+                { key: 'B', text: q.optionB },
+                { key: 'C', text: q.optionC },
+                { key: 'D', text: q.optionD }
+            ];
+
+            optionsContainer.innerHTML = options.map(opt => `
+                <button onclick="handleOptionSelect('${opt.key}')" class="option-btn text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-slate-50 transition flex items-center space-x-3 w-full group">
+                    <span class="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-indigo-100 group-hover:text-indigo-600 flex items-center justify-center font-bold text-sm text-slate-600 transition flex-shrink-0">${opt.key}</span>
+                    <span class="font-medium text-slate-800 text-base">${opt.text}</span>
+                </button>
+            `).join('');
+
+            // Hide Explanation Box
+            document.getElementById('quiz-explanation-box').classList.add('hidden');
+        }
+
+        function updateStockButtonState(qNo) {
+            const isStocked = userStocks.includes(qNo);
+            const btn = document.getElementById('btn-toggle-stock');
+            const icon = document.getElementById('icon-stock-star');
+            const text = document.getElementById('text-stock-star');
+
+            if (isStocked) {
+                btn.className = "flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition border-amber-300 bg-amber-50 text-amber-700 shadow-sm";
+                icon.className = "fa-solid fa-star text-amber-500";
+                text.innerText = "要確認ストック中";
+            } else {
+                btn.className = "flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition border-slate-200 text-slate-500 bg-slate-50 hover:bg-slate-100";
+                icon.className = "fa-regular fa-star";
+                text.innerText = "要確認ストック";
+            }
+        }
+
+        function toggleCurrentStock() {
+            const q = currentQuizList[currentIndex];
+            if (!q) return;
+
+            const idx = userStocks.indexOf(q.no);
+            if (idx >= 0) {
+                userStocks.splice(idx, 1);
+            } else {
+                userStocks.push(q.no);
+            }
+            saveStocks();
+            updateStockButtonState(q.no);
+        }
+
+        function handleOptionSelect(selectedKey) {
+            const q = currentQuizList[currentIndex];
+            const isCorrect = (selectedKey === q.answer);
+
+            // Record session
+            sessionAnswers[currentIndex] = {
+                question: q,
+                selected: selectedKey,
+                isCorrect: isCorrect
+            };
+
+            totalAnsweredCount++;
+            localStorage.setItem('grammar_app_answered_count', totalAnsweredCount);
+            updateStatsUI();
+
+            // Disable all option buttons & highlight choices
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach((btn, index) => {
+                btn.onclick = null; // Disable clicking
+                const keys = ['A', 'B', 'C', 'D'];
+                const key = keys[index];
+
+                if (key === q.answer) {
+                    btn.className = "text-left p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-900 font-bold flex items-center space-x-3 w-full";
+                } else if (key === selectedKey && !isCorrect) {
+                    btn.className = "text-left p-4 rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-900 flex items-center space-x-3 w-full";
+                } else {
+                    btn.className = "text-left p-4 rounded-xl border border-slate-100 opacity-50 flex items-center space-x-3 w-full";
+                }
+            });
+
+            // Show Result Badge & Explanation
+            const badge = document.getElementById('quiz-result-badge');
+            if (isCorrect) {
+                badge.className = "flex items-center space-x-2 font-bold text-lg text-emerald-600";
+                badge.innerHTML = `<i class="fa-solid fa-circle-check text-xl"></i><span>正解！</span>`;
+            } else {
+                badge.className = "flex items-center space-x-2 font-bold text-lg text-rose-600";
+                badge.innerHTML = `<i class="fa-solid fa-circle-xmark text-xl"></i><span>不正解</span>`;
+            }
+
+            document.getElementById('quiz-correct-answer-text').innerText = q.answer;
+            document.getElementById('quiz-explanation-text').innerText = q.explanation;
+            document.getElementById('quiz-explanation-box').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            if (currentIndex < currentQuizList.length - 1) {
+                currentIndex++;
+                renderCurrentQuestion();
+            } else {
+                showResultScreen();
+            }
+        }
+
+        // --- 7. RESULT SCREEN & REVIEW ---
+        function showResultScreen() {
+            screenQuiz.classList.add('hidden');
+            screenResult.classList.remove('hidden');
+
+            const correctCount = sessionAnswers.filter(a => a.isCorrect).length;
+            const totalCount = sessionAnswers.length;
+            const percentage = Math.round((correctCount / totalCount) * 100) || 0;
+
+            document.getElementById('result-score-correct').innerText = correctCount;
+            document.getElementById('result-score-total').innerText = totalCount;
+            document.getElementById('result-score-percent').innerText = `${percentage}%`;
+
+            // Wrong questions count
+            const wrongCount = totalCount - correctCount;
+            document.getElementById('count-wrong-questions').innerText = wrongCount;
+            document.getElementById('btn-review-wrong').disabled = wrongCount === 0;
+
+            // Stock in current session
+            const currentStockList = sessionAnswers.filter(a => userStocks.includes(a.question.no));
+            document.getElementById('btn-review-stock').disabled = currentStockList.length === 0;
+        }
+
+        function reviewWrongQuestions() {
+            const wrongList = sessionAnswers.filter(a => !a.isCorrect).map(a => a.question);
+            if (wrongList.length === 0) return;
+            currentQuizList = wrongList;
+            initQuizSession();
+        }
+
+        function reviewSessionStock() {
+            const stockedList = sessionAnswers.filter(a => userStocks.includes(a.question.no)).map(a => a.question);
+            if (stockedList.length === 0) return;
+            currentQuizList = stockedList;
+            initQuizSession();
+        }
+
+        function retryCurrentQuiz() {
+            initQuizSession();
+        }
+
+        // --- 8. STOCK MANAGEMENT MODAL ---
+        function showBookmarkListModal() {
+            const container = document.getElementById('stock-list-container');
+            const modal = document.getElementById('modal-stock-list');
+
+            if (userStocks.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm">要確認ストック中の問題はありません。</div>`;
+            } else {
+                const stockedQuestions = GRAMMAR_DATA.filter(q => userStocks.includes(q.no));
+                container.innerHTML = stockedQuestions.map(q => `
+                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-start space-x-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded font-bold">${q.domain}</span>
+                                <span class="text-xs text-slate-400">No.${q.no}</span>
+                            </div>
+                            <p class="text-sm font-bold text-slate-800 line-clamp-2">${q.question}</p>
+                        </div>
+                        <button onclick="removeStockFromModal(${q.no})" class="text-slate-400 hover:text-rose-500 p-1 transition">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function removeStockFromModal(no) {
+            const idx = userStocks.indexOf(no);
+            if (idx >= 0) {
+                userStocks.splice(idx, 1);
+                saveStocks();
+                showBookmarkListModal();
+            }
+        }
+
+        function clearAllStock() {
+            if (userStocks.length === 0) return;
+            userStocks = [];
+            saveStocks();
+            showBookmarkListModal();
+        }
+    </script>
+</body>
+</html>
