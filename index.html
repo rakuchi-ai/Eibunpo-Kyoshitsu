@@ -3,92 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>クイズアプリ</title>
+    <title>英文法教室 - クイズ演習</title>
     <style>
+        :root {
+            --primary-color: #2b6cb0;
+            --primary-hover: #2c5282;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-color: #2d3748;
+            --border-color: #e2e8f0;
+            --success-color: #38a169;
+            --error-color: #e53e3e;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f4f6f9;
-            color: #333;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-        }
-        .container {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            width: 100%;
-            max-width: 600px;
             box-sizing: border-box;
         }
+
+        .container {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 650px;
+            box-sizing: border-box;
+        }
+
         .header-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
         }
+
         .btn-home {
-            background-color: #e0e0e0;
-            color: #333;
-            border: none;
+            background-color: #edf2f7;
+            color: #4a5568;
+            border: 1px solid var(--border-color);
             padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
         }
+
         .btn-home:hover {
-            background-color: #d0d0d0;
+            background-color: #e2e8f0;
         }
+
         h1 {
-            font-size: 20px;
-            margin: 0;
-            color: #2c3e50;
+            font-size: 22px;
+            margin: 0 0 10px 0;
+            color: var(--primary-color);
         }
+
+        p {
+            line-height: 1.6;
+            color: #4a5568;
+        }
+
+        .question-meta {
+            font-size: 14px;
+            color: #718096;
+            font-weight: 500;
+        }
+
         .question-box {
             font-size: 18px;
-            margin-bottom: 20px;
+            margin: 20px 0;
             font-weight: bold;
+            color: #1a202c;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
         }
+
         .options-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
+
         .option-btn {
-            background-color: #fff;
-            border: 2px solid #e2e8f0;
-            padding: 12px 16px;
+            background-color: #ffffff;
+            border: 2px solid var(--border-color);
+            padding: 14px 18px;
             border-radius: 8px;
             cursor: pointer;
             text-align: left;
             font-size: 16px;
             transition: all 0.2s;
+            color: #2d3748;
         }
-        .option-btn:hover {
-            border-color: #3182ce;
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary-color);
             background-color: #ebf8ff;
         }
-        .hidden {
-            display: none;
+
+        .option-btn:disabled {
+            cursor: default;
         }
+
+        .option-btn.correct {
+            background-color: #f0fff4;
+            border-color: var(--success-color);
+            color: #22543d;
+        }
+
+        .option-btn.incorrect {
+            background-color: #fff5f5;
+            border-color: var(--error-color);
+            color: #742a2a;
+        }
+
+        .feedback-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f7fafc;
+            border: 1px solid var(--border-color);
+        }
+
+        .feedback-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .feedback-title.correct { color: var(--success-color); }
+        .feedback-title.incorrect { color: var(--error-color); }
+
         .btn-primary {
-            background-color: #3182ce;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
+            font-weight: bold;
             width: 100%;
+            transition: background-color 0.2s;
+            margin-top: 15px;
         }
+
         .btn-primary:hover {
-            background-color: #2b6cb0;
+            background-color: var(--primary-hover);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .score-display {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--primary-color);
         }
     </style>
 </head>
@@ -97,8 +184,8 @@
     <div class="container" id="app">
         <!-- ホーム画面 -->
         <div id="home-screen">
-            <h1>クイズアプリへようこそ</h1>
-            <p>準備ができたらスタートボタンを押してください。</p>
+            <h1>英文法教室</h1>
+            <p>高校英文法の基礎から応用まで、4択クイズで楽しく効率的にマスターしましょう。途中いつでもトップ画面に戻ることが可能です。</p>
             <button class="btn-primary" onclick="startQuiz()">演習スタート</button>
         </div>
 
@@ -106,39 +193,63 @@
         <div id="quiz-screen" class="hidden">
             <div class="header-bar">
                 <button class="btn-home" onclick="returnHome()">ホームへ戻る</button>
-                <span id="progress-indicator" style="font-size: 14px; color: #666;">第1問 / 全3問</span>
+                <span class="question-meta" id="progress-indicator">第1問 / 全5問</span>
             </div>
+            
             <div class="question-box" id="question-text">ここに問題文が表示されます。</div>
+            
             <div class="options-list" id="options-container">
-                <!-- 選択肢が動的に入ります -->
+                <!-- 選択肢がここに挿入されます -->
+            </div>
+
+            <div id="explanation-container" class="feedback-box hidden">
+                <div id="feedback-title" class="feedback-title"></div>
+                <div id="explanation-text"></div>
+                <button class="btn-primary" id="next-btn" onclick="nextQuestion()">次の問題へ</button>
             </div>
         </div>
 
         <!-- 結果画面 -->
         <div id="result-screen" class="hidden">
-            <h1>演習終了！</h1>
-            <p id="score-text">お疲れ様でした。</p>
+            <h1>演習結果</h1>
+            <p>お疲れ様でした！今回のスコアはこちらです。</p>
+            <div class="score-display" id="score-text">正解数: 0 / 5問</div>
             <button class="btn-primary" onclick="returnHome()">ホームに戻る</button>
         </div>
     </div>
 
     <script>
-        // サンプルのクイズデータ
+        // 英文法クイズデータ
         const quizData = [
             {
-                question: "日本の首都はどこですか？",
-                options: ["大阪", "東京", "京都", "福岡"],
-                answer: 1
+                question: "次の英文の空欄に入る最も適切なものを選んでください。\n\n" + "She has lived in Tokyo _____ three years.",
+                options: ["for", "since", "during", "from"],
+                answer: 0,
+                explanation: "「3年間」という期間を表す場合は前置詞 for を使います。since は「〜以来（起点）」を表すため、完了形の継続には for が適切です。"
             },
             {
-                question: "次のうちプログラミング言語はどれ？",
-                options: ["HTML", "CSS", "JavaScript", "JPEG"],
-                answer: 2
+                question: "次の英文の空欄に入る最も適切なものを選んでください。\n\n" + "If it _____ tomorrow, I will stay at home.",
+                options: ["rain", "rains", "rained", "will rain"],
+                answer: 1,
+                explanation: "時や条件を表す副詞節（If節）の中では、未来のことでも現在形を用いるというルールがあります。そのため「rains」が正解です。"
             },
             {
-                question: "1年は何ヶ月ある？",
-                options: ["10ヶ月", "11ヶ月", "12ヶ月", "13ヶ月"],
-                answer: 2
+                question: "次の英文の空欄に入る最も適切なものを選んでください。\n\n" + "This book is _____ interesting than that one.",
+                options: ["very", "more", "most", "much more"],
+                answer: 1,
+                explanation: "比較級の強調ではなく、単純な比較「〜よりもっと面白い」を表すため、interesting の比較級「more interesting」が入ります。"
+            },
+            {
+                question: "次の文の空欄に入る最も適切なものを選んでください。\n\n" + "I am looking forward to _____ you soon.",
+                options: ["see", "seeing", "saw", "seen"],
+                answer: 1,
+                explanation: "look forward to の to は前置詞のため、後ろには動名詞（〜ing形式）が続きます。そのため「seeing」が正解です。"
+            },
+            {
+                question: "次の文の空欄に入る最も適切なものを選んでください。\n\n" + "Hardly had I arrived at the station _____ the train left.",
+                options: ["than", "when", "then", "until"],
+                answer: 1,
+                explanation: "「Hardly 〜 when ...」の構文で、「〜するやいなや…した」という意味になります。"
             }
         ];
 
@@ -162,6 +273,9 @@
             const container = document.getElementById('options-container');
             container.innerHTML = '';
             
+            // 解説エリアを隠す
+            document.getElementById('explanation-container').classList.add('hidden');
+            
             q.options.forEach((option, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
@@ -173,10 +287,46 @@
 
         function selectAnswer(selectedIndex) {
             const q = quizData[currentQuestionIndex];
-            if (selectedIndex === q.answer) {
+            const optionButtons = document.querySelectorAll('.option-btn');
+            
+            // 選択肢を固定・正誤のスタイルを適用
+            optionButtons.forEach((btn, index) => {
+                btn.disabled = true;
+                if (index === q.answer) {
+                    btn.classList.add('correct');
+                } else if (index === selectedIndex) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            const isCorrect = (selectedIndex === q.answer);
+            if (isCorrect) {
                 score++;
             }
-            
+
+            // 解説の表示
+            const feedbackTitle = document.getElementById('feedback-title');
+            if (isCorrect) {
+                feedbackTitle.innerText = "正解！";
+                feedbackTitle.className = "feedback-title correct";
+            } else {
+                feedbackTitle.innerText = "不正解...";
+                feedbackTitle.className = "feedback-title incorrect";
+            }
+
+            document.getElementById('explanation-text').innerText = q.explanation;
+            document.getElementById('explanation-container').classList.remove('hidden');
+
+            // 最後の問題の場合はボタンのテキストを変更
+            const nextBtn = document.getElementById('next-btn');
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextBtn.innerText = "結果を見る";
+            } else {
+                nextBtn.innerText = "次の問題へ";
+            }
+        }
+
+        function nextQuestion() {
             currentQuestionIndex++;
             if (currentQuestionIndex < quizData.length) {
                 loadQuestion();
