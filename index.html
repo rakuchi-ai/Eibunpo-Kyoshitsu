@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>英文法教室</title>
+<title>問題演習</title>
 <style>
 :root{--bg:#f3f5f4;--card:#fff;--tx:#1c2523;--mut:#66726f;--bd:#d8dedc;--board:#1f3a34;--chalk:#f2f4ef;--hi:#e8c547;--ok:#23804f;--ng:#c0392b;--sel:#1f3a34;--selx:#f2f4ef}
 @media(prefers-color-scheme:dark){:root{--bg:#121816;--card:#1a2220;--tx:#e6ebe9;--mut:#93a09c;--bd:#2c3835;--board:#0f1f1b;--chalk:#eef1ec;--ok:#46c07f;--ng:#ff7b6e;--sel:#e8c547;--selx:#14201d}}
@@ -55,15 +55,14 @@ input[type=text]{width:100%;padding:12px;border:1.5px solid var(--bd);border-rad
 </style>
 </head>
 <body>
-<header><h1>英文法教室</h1><p>4択・入力で英文法を鍛えよう</p></header>
+<header><h1 id="ttl">問題演習</h1><p id="sub"></p></header>
 <main id="app"></main>
 <script>
 const CSV_FILE='questions.csv';          // 問題を差し替えるときは、このCSVを入れ替える
-const LS='eibunpou_kyoushitsu_v1';
-let ALL=[], S={scope:'unit',fmt:'4択',unit:'',n:10}, Q=null;
-let st=(()=>{try{return Object.assign({wrong:[],stock:[],rec:{}},JSON.parse(localStorage.getItem(LS)))}catch(e){return{wrong:[],stock:[],rec:{}}}})();
-st.wrong.forEach(n=>{if(!st.rec[n])st.rec[n]='x'});
-const save=()=>{try{localStorage.setItem(LS,JSON.stringify(st))}catch(e){}};
+let ALL=[], S={scope:'unit',fmt:'4択',unit:'',n:10}, Q=null, WARN=[], FM=['4択','入力'], LSK='quiz_v1';
+let st={wrong:[],stock:[],rec:{}};
+const loadSt=()=>{try{return Object.assign({wrong:[],stock:[],rec:{}},JSON.parse(localStorage.getItem(LSK)))}catch(e){return{wrong:[],stock:[],rec:{}}}};
+const save=()=>{try{localStorage.setItem(LSK,JSON.stringify(st))}catch(e){}};
 const $=s=>document.querySelector(s), app=$('#app');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm=s=>String(s).replace(/[’‘]/g,"'").replace(/[“”]/g,'"').replace(/\s+/g,' ').trim().toLowerCase();
@@ -82,9 +81,29 @@ function parseCSV(t){
   return rows.map(x=>{const o={};h.forEach((k,i)=>o[k]=x[i]??'');return o});
 }
 function setData(text){
-  ALL=parseCSV(text).filter(o=>o['問題']).map(o=>({
-    no:+o['No'],q:o['問題'].replace(/\r\n?/g,'\n').replace(/[ \t]*\n?[ \t]*(【(?:和訳|指示)】)/,'\n$1'),c:['A','B','C','D'].map(k=>o['選択肢'+k]),a:o['正解'],ex:o['解説'],
-    unit:o['単元']||o['分野']||'その他',fmt:o['形式']||(o['選択肢A']?'4択':'入力'),alt:(o['別解']||'').split('|').filter(Boolean)}));
+  const rows=parseCSV(text).filter(o=>(o['問題']||'').trim());
+  const first=k=>{const r=rows.find(o=>(o[k]||'').trim());return r?r[k].trim():''};
+  const title=first('アプリ名')||'問題演習';
+  WARN=[];ALL=[];const used=new Set();
+  rows.forEach((o,i)=>{
+    const row=i+2;let no=parseInt(o['No'],10);
+    if(!isFinite(no)||used.has(no)){WARN.push(`${row}行目: No が空か重複しています(自動で番号を振りました。記録のため No は固定を推奨)`);no=100000+i}
+    const c=['A','B','C','D'].map(k=>(o['選択肢'+k]||'').trim());
+    const fmt=(o['形式']||'').trim()||(c[0]?'4択':'入力');
+    const a=(o['正解']||'').trim(), A=a.toUpperCase();
+    if(fmt=='4択'){
+      if(c.filter(Boolean).length<2||!'ABCD'.includes(A)||A.length!=1||!c['ABCD'.indexOf(A)]){WARN.push(`${row}行目(No.${no}): 4択の選択肢か正解(A〜D)が正しくないため除外しました`);return}
+    }else if(fmt=='入力'){
+      if(!a){WARN.push(`${row}行目(No.${no}): 入力問題の正解が空のため除外しました`);return}
+    }else{WARN.push(`${row}行目(No.${no}): 形式は「4択」か「入力」にしてください(除外しました)`);return}
+    used.add(no);
+    ALL.push({no,q:(o['問題']).replace(/\r\n?/g,'\n').replace(/[ \t]*\n?[ \t]*(【(?:和訳|指示)】)/,'\n$1'),c,a:fmt=='4択'?A:a,ex:o['解説']||'',
+      unit:(o['単元']||o['分野']||'').trim()||'その他',fmt,alt:(o['別解']||'').split('|').map(x=>x.trim()).filter(Boolean)});
+  });
+  LSK=title=='英文法教室'?'eibunpou_kyoushitsu_v1':'quiz_v1_'+title;   // アプリ名ごとに記録を分ける
+  st=loadSt();st.wrong.forEach(n=>{if(!st.rec[n])st.rec[n]='x'});
+  document.title=title;$('#ttl').textContent=title;$('#sub').textContent=first('サブタイトル');
+  FM=['4択','入力'].filter(f=>ALL.some(q=>q.fmt==f));if(!FM.includes(S.fmt))S.fmt=FM[0]||'4択';
   const units=unitsOf(S.fmt);if(!units.includes(S.unit))S.unit=units[0]||'';
   home();
 }
@@ -112,16 +131,14 @@ function home(){
   const stockN=ALL.filter(q=>q.fmt==S.fmt&&st.stock.includes(q.no)).length;
   const p=pool(), cnt=S.scope=='random'?Math.min(S.n,p.length):p.length;
   const o=(on,attr,main,sub)=>`<button class="opt${on?' on':''}" ${attr}>${main}${sub?`<small>${sub}</small>`:''}</button>`;
-  app.innerHTML=`
+  app.innerHTML=`${WARN.length?`<details class="msg" style="margin-bottom:14px"><summary>CSVに${WARN.length}件の確認事項があります</summary>${WARN.slice(0,30).map(esc).join('<br>')}</details>`:''}
   <div class="card"><h2>出題範囲</h2><div class="row">
     ${o(S.scope=='unit','data-scope="unit"','単元別')}
     ${o(S.scope=='random','data-scope="random"','ランダム')}
     ${o(S.scope=='wrong','data-scope="wrong"','間違えた問題のみ',wrongN+'問')}
     ${o(S.scope=='stock','data-scope="stock"','ストック問題',stockN+'問')}
   </div></div>
-  <div class="card"><h2>形式</h2><div class="row">
-    ${o(S.fmt=='4択','data-fmt="4択"','4択')}${o(S.fmt=='入力','data-fmt="入力"','入力')}
-  </div></div>
+  ${FM.length>1?`<div class="card"><h2>形式</h2><div class="row">${FM.map(f=>o(S.fmt==f,`data-fmt="${f}"`,f)).join('')}</div></div>`:''}
   ${S.scope=='unit'?`<div class="card"><h2>単元(選んだ単元の全問題に挑戦します)</h2><select id="unit">${unitsOf(S.fmt).map(u=>`<option${u==S.unit?' selected':''}>${esc(u)}</option>`).join('')}</select></div>`:''}
   ${S.scope=='random'?`<div class="card"><h2>問題数</h2><div class="row">${[10,20,50].map(n=>o(S.n==n,`data-n="${n}"`,n+'問')).join('')}</div></div>`:''}
   <button class="go" id="start" ${cnt?'':'disabled'}>${cnt?`演習スタート(${cnt}問)`:(S.scope=='wrong'?'間違えた問題はまだありません':S.scope=='stock'?'ストック問題はまだありません':'問題がありません')}</button>
@@ -150,8 +167,8 @@ function show(){
   <div class="card"><div class="unit">${esc(q.unit)}</div>
   <p class="q">${esc(q.q)}</p>
   <div id="in">${q.fmt=='4択'
-    ?q.c.map((t,i)=>`<button class="ch" data-k="${'ABCD'[i]}"><b>${'ABCD'[i]}</b>${esc(t)}</button>`).join('')
-    :`<input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="答えを英語で入力"><div class="acts"><button class="next" id="ok">回答する</button></div>`}
+    ?q.c.map((t,i)=>t?`<button class="ch" data-k="${'ABCD'[i]}"><b>${'ABCD'[i]}</b>${esc(t)}</button>`:'').join('')
+    :`<input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="答えを入力"><div class="acts"><button class="next" id="ok">回答する</button></div>`}
   </div><div id="fb"></div></div>`;
   $('#quit').onclick=quit;
   if(q.fmt=='4択')app.querySelectorAll('.ch').forEach(b=>b.onclick=()=>judge(b.dataset.k));
@@ -162,7 +179,7 @@ function judge(v){
   let ok,ansText;
   if(q.fmt=='4択'){ok=v==q.a;ansText=q.a+'. '+q.c['ABCD'.indexOf(q.a)];}
   else{if(!norm(v))return;ok=[q.a,...q.alt].some(a=>norm(a)==norm(v));ansText=q.a+(q.alt.length?`(別解: ${q.alt.join(' / ')})`:'');}
-  Q.done=true;
+  Q.done=true;Q.t=Date.now();
   const wasStock=st.stock.includes(q.no), auto=ok&&wasStock;
   st.rec[q.no]=ok?'c':'x';
   if(ok){Q.ok++;st.wrong=st.wrong.filter(n=>n!==q.no);if(wasStock)st.stock=st.stock.filter(n=>n!==q.no)}
@@ -178,8 +195,12 @@ function judge(v){
     <button class="next" id="nx">${last?'結果を見る':'次の問題'}</button></div>`;
   $('#stk').onclick=e=>{toggleStock(q.no);e.target.classList.toggle('on',st.stock.includes(q.no));e.target.textContent=lbl()};
   $('#nx').onclick=()=>{Q.done=false;if(last)result();else{Q.i++;show();scrollTo(0,0)}};
-  $('#nx').focus();
 }
+// Enterキーで次の問題へ(回答直後のEnterの二重入力は無視する)
+document.addEventListener('keydown',e=>{
+  if(e.key!='Enter'||e.isComposing||!Q||!Q.done||e.target.tagName=='BUTTON'||Date.now()-Q.t<400)return;
+  const n=$('#nx');if(n){e.preventDefault();n.click()}
+});
 function toggleStock(n){st.stock=st.stock.includes(n)?st.stock.filter(x=>x!==n):[...st.stock,n];save()}
 function result(){
   const t=Q.list.length;
