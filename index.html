@@ -83,7 +83,7 @@ function parseCSV(t){
 }
 function setData(text){
   ALL=parseCSV(text).filter(o=>o['問題']).map(o=>({
-    no:+o['No'],q:o['問題'],c:['A','B','C','D'].map(k=>o['選択肢'+k]),a:o['正解'],ex:o['解説'],
+    no:+o['No'],q:o['問題'].replace(/\r\n?/g,'\n').replace(/[ \t]*\n?[ \t]*(【(?:和訳|指示)】)/,'\n$1'),c:['A','B','C','D'].map(k=>o['選択肢'+k]),a:o['正解'],ex:o['解説'],
     unit:o['単元']||o['分野']||'その他',fmt:o['形式']||(o['選択肢A']?'4択':'入力'),alt:(o['別解']||'').split('|').filter(Boolean)}));
   const units=unitsOf(S.fmt);if(!units.includes(S.unit))S.unit=units[0]||'';
   home();
