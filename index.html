@@ -49,6 +49,8 @@ input[type=text]{width:100%;padding:12px;border:1.5px solid var(--bd);border-rad
 .li{padding:10px 0;border-top:1px solid var(--bd)}
 .li:first-child{border-top:0}
 .msg{padding:14px;border:1.5px dashed var(--ng);border-radius:8px}
+.rec{padding:12px 0;border-top:1px solid var(--bd)}.rec:first-child{border-top:0}.rec h3{margin:0 0 6px;font-size:16px}
+.m{display:flex;align-items:center;gap:8px;font-size:14px;margin:4px 0}.m span{width:4em;color:var(--mut)}.m .t{flex:1;height:10px;background:var(--bd);border-radius:5px;overflow:hidden}.m .t i{display:block;height:100%}.m b{width:3.4em;text-align:right}.sub{font-size:12px;color:var(--mut)}
 :focus-visible{outline:3px solid var(--hi);outline-offset:2px}
 </style>
 </head>
@@ -59,7 +61,8 @@ input[type=text]{width:100%;padding:12px;border:1.5px solid var(--bd);border-rad
 const CSV_FILE='questions.csv';          // 問題を差し替えるときは、このCSVを入れ替える
 const LS='eibunpou_kyoushitsu_v1';
 let ALL=[], S={scope:'unit',fmt:'4択',unit:'',n:10}, Q=null;
-let st=(()=>{try{return Object.assign({wrong:[],stock:[]},JSON.parse(localStorage.getItem(LS)))}catch(e){return{wrong:[],stock:[]}}})();
+let st=(()=>{try{return Object.assign({wrong:[],stock:[],rec:{}},JSON.parse(localStorage.getItem(LS)))}catch(e){return{wrong:[],stock:[],rec:{}}}})();
+st.wrong.forEach(n=>{if(!st.rec[n])st.rec[n]='x'});
 const save=()=>{try{localStorage.setItem(LS,JSON.stringify(st))}catch(e){}};
 const $=s=>document.querySelector(s), app=$('#app');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -100,11 +103,13 @@ function pool(){
   let p=ALL.filter(q=>q.fmt==S.fmt);
   if(S.scope=='unit')p=p.filter(q=>q.unit==S.unit);
   if(S.scope=='wrong')p=p.filter(q=>st.wrong.includes(q.no));
+  if(S.scope=='stock')p=p.filter(q=>st.stock.includes(q.no));
   return p;
 }
 function home(){
   Q=null;
   const wrongN=ALL.filter(q=>q.fmt==S.fmt&&st.wrong.includes(q.no)).length;
+  const stockN=ALL.filter(q=>q.fmt==S.fmt&&st.stock.includes(q.no)).length;
   const p=pool(), cnt=S.scope=='random'?Math.min(S.n,p.length):p.length;
   const o=(on,attr,main,sub)=>`<button class="opt${on?' on':''}" ${attr}>${main}${sub?`<small>${sub}</small>`:''}</button>`;
   app.innerHTML=`
@@ -112,26 +117,27 @@ function home(){
     ${o(S.scope=='unit','data-scope="unit"','単元別')}
     ${o(S.scope=='random','data-scope="random"','ランダム')}
     ${o(S.scope=='wrong','data-scope="wrong"','間違えた問題のみ',wrongN+'問')}
+    ${o(S.scope=='stock','data-scope="stock"','ストック問題',stockN+'問')}
   </div></div>
   <div class="card"><h2>形式</h2><div class="row">
     ${o(S.fmt=='4択','data-fmt="4択"','4択')}${o(S.fmt=='入力','data-fmt="入力"','入力')}
   </div></div>
   ${S.scope=='unit'?`<div class="card"><h2>単元(選んだ単元の全問題に挑戦します)</h2><select id="unit">${unitsOf(S.fmt).map(u=>`<option${u==S.unit?' selected':''}>${esc(u)}</option>`).join('')}</select></div>`:''}
   ${S.scope=='random'?`<div class="card"><h2>問題数</h2><div class="row">${[10,20,50].map(n=>o(S.n==n,`data-n="${n}"`,n+'問')).join('')}</div></div>`:''}
-  <button class="go" id="start" ${cnt?'':'disabled'}>${cnt?`演習スタート(${cnt}問)`:(S.scope=='wrong'?'間違えた問題はまだありません':'問題がありません')}</button>
-  <p style="text-align:center"><button class="link" id="stock">自信がない問題ストック(${st.stock.length}問)を見る</button></p>`;
+  <button class="go" id="start" ${cnt?'':'disabled'}>${cnt?`演習スタート(${cnt}問)`:(S.scope=='wrong'?'間違えた問題はまだありません':S.scope=='stock'?'ストック問題はまだありません':'問題がありません')}</button>
+  <p style="text-align:center"><button class="link" id="rec">あなたの記録</button>　<button class="link" id="stock">ストック一覧(${st.stock.length}問)</button></p>`;
   app.querySelectorAll('[data-scope]').forEach(b=>b.onclick=()=>{S.scope=b.dataset.scope;home()});
   app.querySelectorAll('[data-fmt]').forEach(b=>b.onclick=()=>{S.fmt=b.dataset.fmt;const u=unitsOf(S.fmt);if(!u.includes(S.unit))S.unit=u[0]||'';home()});
   app.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{S.n=+b.dataset.n;home()});
   const u=$('#unit');if(u)u.onchange=()=>{S.unit=u.value;home()};
-  $('#start').onclick=start;$('#stock').onclick=stockView;
+  $('#start').onclick=start;$('#stock').onclick=stockView;$('#rec').onclick=recView;
 }
 
 /* ---------- 演習 ---------- */
 function start(){
   let p=pool();
   if(S.scope=='random')p=shuffle(p).slice(0,S.n);
-  else if(S.scope=='wrong')p=shuffle(p);
+  else if(S.scope=='wrong'||S.scope=='stock')p=shuffle(p);
   if(!p.length)return;
   Q={list:p,i:0,ok:0,ng:[],done:false};show();
 }
@@ -157,17 +163,20 @@ function judge(v){
   if(q.fmt=='4択'){ok=v==q.a;ansText=q.a+'. '+q.c['ABCD'.indexOf(q.a)];}
   else{if(!norm(v))return;ok=[q.a,...q.alt].some(a=>norm(a)==norm(v));ansText=q.a+(q.alt.length?`(別解: ${q.alt.join(' / ')})`:'');}
   Q.done=true;
-  if(ok){Q.ok++;st.wrong=st.wrong.filter(n=>n!==q.no)}
+  const wasStock=st.stock.includes(q.no), auto=ok&&wasStock;
+  st.rec[q.no]=ok?'c':'x';
+  if(ok){Q.ok++;st.wrong=st.wrong.filter(n=>n!==q.no);if(wasStock)st.stock=st.stock.filter(n=>n!==q.no)}
   else{Q.ng.push(q);if(!st.wrong.includes(q.no))st.wrong.push(q.no)}
   save();
+  const lbl=()=>st.stock.includes(q.no)?'★ ストック済み':(auto?'☆ まだ自信がないのでストックに戻す':'☆ 自信がないのでストック');
   if(q.fmt=='4択')app.querySelectorAll('.ch').forEach(b=>{b.disabled=true;if(b.dataset.k==q.a)b.classList.add('ok');else if(b.dataset.k==v)b.classList.add('ng')});
   else{$('#ans').disabled=true;$('#ok').remove()}
   const last=Q.i==Q.list.length-1;
   $('#fb').innerHTML=`<div class="fb${ok?'':' bad'}"><h3>${ok?'◯ 正解':'✕ 不正解'}</h3>
-    <p>正解: <span class="ans">${esc(ansText)}</span></p><p>${esc(q.ex)}</p></div>
-    <div class="acts"><button class="st${st.stock.includes(q.no)?' on':''}" id="stk">${st.stock.includes(q.no)?'★ ストック済み':'☆ 自信がないのでストック'}</button>
+    <p>正解: <span class="ans">${esc(ansText)}</span></p><p>${esc(q.ex)}</p>${auto?'<p class="sub">ストック問題に正答したので、正答扱いになりストックから外れました。</p>':''}</div>
+    <div class="acts"><button class="st${st.stock.includes(q.no)?' on':''}" id="stk">${lbl()}</button>
     <button class="next" id="nx">${last?'結果を見る':'次の問題'}</button></div>`;
-  $('#stk').onclick=e=>{toggleStock(q.no);e.target.classList.toggle('on',st.stock.includes(q.no));e.target.textContent=st.stock.includes(q.no)?'★ ストック済み':'☆ 自信がないのでストック'};
+  $('#stk').onclick=e=>{toggleStock(q.no);e.target.classList.toggle('on',st.stock.includes(q.no));e.target.textContent=lbl()};
   $('#nx').onclick=()=>{Q.done=false;if(last)result();else{Q.i++;show();scrollTo(0,0)}};
   $('#nx').focus();
 }
@@ -179,6 +188,35 @@ function result(){
   ${Q.ng.length?`<div class="card"><h2>間違えた問題(${Q.ng.length}問・「間違えた問題のみ」で復習できます)</h2>${Q.ng.map(q=>`<div class="li"><div class="q" style="font-size:17px;margin:0">${esc(q.q)}</div><div>正解: <span class="ans">${esc(q.a.length==1&&q.fmt=='4択'?q.a+'. '+q.c['ABCD'.indexOf(q.a)]:q.a)}</span></div></div>`).join('')}</div>`:''}
   <button class="go" id="h">ホームに戻る</button>`;
   $('#h').onclick=home;scrollTo(0,0);
+}
+
+/* ---------- あなたの記録 ---------- */
+function stats(){
+  return [...new Set(ALL.map(q=>q.unit))].map(u=>{
+    const qs=ALL.filter(q=>q.unit==u);
+    return{u,total:qs.length,tried:qs.filter(q=>st.rec[q.no]).length,
+      ok:qs.filter(q=>st.rec[q.no]=='c'&&!st.stock.includes(q.no)).length};
+  });
+}
+const pct=(a,b)=>b?Math.round(a/b*100):null;
+function meter(label,v,color){
+  return `<div class="m"><span>${label}</span><div class="t"><i style="width:${v||0}%;background:${color}"></i></div><b>${v==null?'—':v+'%'}</b></div>`;
+}
+function recView(){
+  const ss=stats(), sum=ss.reduce((a,x)=>({total:a.total+x.total,tried:a.tried+x.tried,ok:a.ok+x.ok}),{total:0,tried:0,ok:0});
+  const block=(name,x)=>`<div class="rec"><h3>${esc(name)}</h3>${meter('達成率',pct(x.ok,x.total),'var(--hi)')}${meter('正答率',pct(x.ok,x.tried),'var(--ok)')}
+    <div class="sub">正答 ${x.ok}問 / 全${x.total}問 ・ 演習済み ${x.tried}問</div></div>`;
+  app.innerHTML=`<div class="bar"><span>あなたの記録</span><button id="b">ホームに戻る</button></div>
+  <div class="card">${block('全体',sum)}</div>
+  <div class="card"><h2>単元ごとの記録</h2>${ss.map(x=>block(x.u,x)).join('')}</div>
+  <div class="card"><h2>達成率・正答率とは</h2>
+    <p class="sub" style="margin:0 0 6px"><b>達成率</b> = 単元の全問題(4択・入力の合計)のうち、正答した問題の割合</p>
+    <p class="sub" style="margin:0 0 6px"><b>正答率</b> = 演習した問題のうち、正答した問題の割合</p>
+    <p class="sub" style="margin:0">・各問題の「最新の解答」で数えます(間違えた問題を後で正解すれば、正答になります)。<br>・正解でも「自信がないのでストック」した問題は、ストック中は正答に数えません。ストック問題にもう一度正答するとストックから外れ、正答扱いになります。</p></div>
+  <p style="text-align:center"><button class="link" id="reset">記録をリセットする</button></p>`;
+  $('#b').onclick=home;
+  $('#reset').onclick=()=>{if(confirm('正誤の記録(達成率・正答率・間違えた問題)をリセットします。ストックは残ります。よろしいですか?')){st.rec={};st.wrong=[];save();recView()}};
+  scrollTo(0,0);
 }
 
 /* ---------- ストック ---------- */
