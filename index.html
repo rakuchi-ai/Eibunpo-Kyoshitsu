@@ -121,7 +121,7 @@ function parseCSV(t){
 function setData(text){
   const rows=parseCSV(text).filter(o=>(o['問題']||'').trim());
   const first=k=>{const r=rows.find(o=>(o[k]||'').trim());return r?r[k].trim():''};
-  const title=first('アプリ名')||'問題演習';
+  const title=first('アプリ名')||'英文法教室';
   WARN=[];ALL=[];const used=new Set();
   rows.forEach((o,i)=>{
     const row=i+2;let no=parseInt(o['No'],10);
