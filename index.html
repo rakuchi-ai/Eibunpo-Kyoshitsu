@@ -74,10 +74,12 @@ input[type=text]{width:100%;padding:12px;border:1.5px solid var(--bd);border-rad
 </head>
 <body>
 <header><h1 id="ttl">英文法教室</h1><p id="sub"></p></header>
-<main id="app"></main>
-  <a href="https://rakuchi-ai.github.io/ENGLISH-TOP/" class="back-portal-link">
+<div style="max-width:720px; margin:0 auto; padding:16px 16px 0;">
+<a href="https://rakuchi-ai.github.io/ENGLISH-TOP/" class="back-portal-link">
     &larr; ポータルに戻る
 </a>
+</div>
+<main id="app"></main>
 <script>
 const CSV_FILE='questions.csv';          // 問題を差し替えるときは、このCSVを入れ替える
 let ALL=[], S={scope:'unit',fmt:'4択',unit:'',n:10}, Q=null, WARN=[], FM=['4択','入力'], LSK='quiz_v1';
