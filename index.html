@@ -44,7 +44,9 @@ select{width:100%;padding:10px;border:1.5px solid var(--bd);border-radius:8px;ba
 .prog{height:6px;background:var(--bd);border-radius:3px;margin-bottom:14px;overflow:hidden}
 .prog i{display:block;height:100%;background:var(--hi)}
 .unit{font-size:12px;color:var(--mut);margin-bottom:6px}
-.q{font-size:20px;line-height:1.9;font-family:Georgia,"Times New Roman","Hiragino Mincho ProN","Yu Mincho",serif;white-space:pre-wrap;word-break:break-word;margin:0 0 14px}
+
+/* CSVから読み込まれる問題文にもUDフォントを優先適用 */
+.q{font-size:20px;line-height:1.9;font-family:var(--base-font), Georgia,"Times New Roman","Hiragino Mincho ProN","Yu Mincho",serif;white-space:pre-wrap;word-break:break-word;margin:0 0 14px}
 .ch{display:block;width:100%;text-align:left;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--bd);background:var(--card);border-radius:8px;cursor:pointer;font-size:17px}
 .ch b{display:inline-block;width:1.6em;color:var(--mut);font-family:var(--base-font)}
 .ch.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 16%,transparent)}
@@ -55,7 +57,7 @@ input[type=text]{width:100%;padding:12px;border:1.5px solid var(--bd);border-rad
 .fb.bad{border-color:var(--ng);background:color-mix(in srgb,var(--ng) 10%,transparent)}
 .fb h3{margin:0 0 4px;font-size:18px}
 .fb p{margin:4px 0}
-.ans{font-family:Georgia,serif;font-size:18px;font-weight:700}
+.ans{font-family:var(--base-font), Georgia,serif;font-size:18px;font-weight:700}
 .acts{display:flex;gap:8px;margin-top:12px}
 .acts button{flex:1;padding:12px;border-radius:8px;border:1.5px solid var(--bd);background:var(--card);cursor:pointer}
 .acts .next{background:var(--board);color:var(--chalk);border-color:var(--board);font-weight:700}
