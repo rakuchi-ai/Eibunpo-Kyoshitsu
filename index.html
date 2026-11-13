@@ -52,11 +52,32 @@ input[type=text]{width:100%;padding:12px;border:1.5px solid var(--bd);border-rad
 .rec{padding:12px 0;border-top:1px solid var(--bd)}.rec:first-child{border-top:0}.rec h3{margin:0 0 6px;font-size:16px}
 .m{display:flex;align-items:center;gap:8px;font-size:14px;margin:4px 0}.m span{width:4em;color:var(--mut)}.m .t{flex:1;height:10px;background:var(--bd);border-radius:5px;overflow:hidden}.m .t i{display:block;height:100%}.m b{width:3.4em;text-align:right}.sub{font-size:12px;color:var(--mut)}
 :focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+    .back-portal-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #64748b;
+        background-color: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: background-color 0.2s, color 0.2s;
+    }
+    .back-portal-link:hover {
+        background-color: #e2e8f0;
+        color: #1e293b;
+    }
 </style>
 </head>
 <body>
 <header><h1 id="ttl">英文法教室</h1><p id="sub"></p></header>
 <main id="app"></main>
+  <a href="https://rakuchi-ai.github.io/ENGLISH-TOP/" class="back-portal-link">
+    &larr; ポータルに戻る
+</a>
 <script>
 const CSV_FILE='questions.csv';          // 問題を差し替えるときは、このCSVを入れ替える
 let ALL=[], S={scope:'unit',fmt:'4択',unit:'',n:10}, Q=null, WARN=[], FM=['4択','入力'], LSK='quiz_v1';
