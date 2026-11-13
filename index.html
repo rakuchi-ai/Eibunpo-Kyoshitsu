@@ -4,11 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>英文法教室</title>
+
+<!-- Google FontsからUD系フォント（BIZ UDPGothic）を読み込み -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
-:root{--bg:#f3f5f4;--card:#fff;--tx:#1c2523;--mut:#66726f;--bd:#d8dedc;--board:#1f3a34;--chalk:#f2f4ef;--hi:#e8c547;--ok:#23804f;--ng:#c0392b;--sel:#1f3a34;--selx:#f2f4ef}
+:root{
+    --bg:#f3f5f4;--card:#fff;--tx:#1c2523;--mut:#66726f;--bd:#d8dedc;--board:#1f3a34;--chalk:#f2f4ef;--hi:#e8c547;--ok:#23804f;--ng:#c0392b;--sel:#1f3a34;--selx:#f2f4ef;
+    --base-font: "UD Digi Kyokasho N-R", "UD Digital Kyokasho NK-R", "BIZ UDPGothic", "メイリオ", Meiryo, sans-serif;
+}
 @media(prefers-color-scheme:dark){:root{--bg:#121816;--card:#1a2220;--tx:#e6ebe9;--mut:#93a09c;--bd:#2c3835;--board:#0f1f1b;--chalk:#eef1ec;--ok:#46c07f;--ng:#ff7b6e;--sel:#e8c547;--selx:#14201d}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.7 "Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif}
+
+/* ページ全体および文字を扱う要素にUDフォントを確実に適用 */
+body, button, select, input, textarea, h1, h2, h3, h4, h5, h6 {
+    font-family: var(--base-font) !important;
+}
+
+body{margin:0;background:var(--bg);color:var(--tx);font-size:16px;line-height:1.7}
 header{background:var(--board);color:var(--chalk);padding:18px 16px 14px;border-bottom:5px solid var(--hi)}
 header h1{margin:0;font-size:26px;letter-spacing:.12em;font-weight:700}
 header p{margin:2px 0 0;font-size:13px;opacity:.8}
@@ -29,9 +44,9 @@ select{width:100%;padding:10px;border:1.5px solid var(--bd);border-radius:8px;ba
 .prog{height:6px;background:var(--bd);border-radius:3px;margin-bottom:14px;overflow:hidden}
 .prog i{display:block;height:100%;background:var(--hi)}
 .unit{font-size:12px;color:var(--mut);margin-bottom:6px}
-.q{font:20px/1.9 Georgia,"Times New Roman","Hiragino Mincho ProN","Yu Mincho",serif;white-space:pre-wrap;word-break:break-word;margin:0 0 14px}
+.q{font-size:20px;line-height:1.9;font-family:Georgia,"Times New Roman","Hiragino Mincho ProN","Yu Mincho",serif;white-space:pre-wrap;word-break:break-word;margin:0 0 14px}
 .ch{display:block;width:100%;text-align:left;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--bd);background:var(--card);border-radius:8px;cursor:pointer;font-size:17px}
-.ch b{display:inline-block;width:1.6em;color:var(--mut)}
+.ch b{display:inline-block;width:1.6em;color:var(--mut);font-family:var(--base-font)}
 .ch.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 16%,transparent)}
 .ch.ng{border-color:var(--ng);background:color-mix(in srgb,var(--ng) 16%,transparent)}
 .ch:disabled{cursor:default;color:inherit}
@@ -81,7 +96,7 @@ input[type=text]{width:100%;padding:12px;border:1.5px solid var(--bd);border-rad
 </div>
 <main id="app"></main>
 <script>
-const CSV_FILE='questions.csv';          // 問題を差し替えるときは、このCSVを入れ替える
+const CSV_FILE='questions.csv';         // 問題を差し替えるときは、このCSVを入れ替える
 let ALL=[], S={scope:'unit',fmt:'4択',unit:'',n:10}, Q=null, WARN=[], FM=['4択','入力'], LSK='quiz_v1';
 let st={wrong:[],stock:[],rec:{}};
 const loadSt=()=>{try{return Object.assign({wrong:[],stock:[],rec:{}},JSON.parse(localStorage.getItem(LSK)))}catch(e){return{wrong:[],stock:[],rec:{}}}};
@@ -162,10 +177,10 @@ function home(){
     ${o(S.scope=='stock','data-scope="stock"','ストック問題',stockN+'問')}
   </div></div>
   ${FM.length>1?`<div class="card"><h2>形式</h2><div class="row">${FM.map(f=>o(S.fmt==f,`data-fmt="${f}"`,f)).join('')}</div></div>`:''}
-  ${S.scope=='unit'?`<div class="card"><h2>単元(選んだ単元の全問題に挑戦します)</h2><select id="unit">${unitsOf(S.fmt).map(u=>`<option${u==S.unit?' selected':''}>${esc(u)}</option>`).join('')}</select></div>`:''}
+  ${S.scope=='unit'?`<div class="card"><h2>単元(選んだ単元の全問題に挑戦します)</h2><select id="unit">${unitsOf(S.fmt).map(u=>`<option${u==S.unit?' selected':''}>${esc(u)}</option>`).join('')}</div>`:''}
   ${S.scope=='random'?`<div class="card"><h2>問題数</h2><div class="row">${[10,20,50].map(n=>o(S.n==n,`data-n="${n}"`,n+'問')).join('')}</div></div>`:''}
   <button class="go" id="start" ${cnt?'':'disabled'}>${cnt?`演習スタート(${cnt}問)`:(S.scope=='wrong'?'間違えた問題はまだありません':S.scope=='stock'?'ストック問題はまだありません':'問題がありません')}</button>
-  <p style="text-align:center"><button class="link" id="rec">あなたの記録</button>　<button class="link" id="stock">ストック一覧(${st.stock.length}問)</button></p>`;
+  <p style="text-align:center"><button class="link" id="rec">あなたの記録</button> <button class="link" id="stock">ストック一覧(${st.stock.length}問)</button></p>`;
   app.querySelectorAll('[data-scope]').forEach(b=>b.onclick=()=>{S.scope=b.dataset.scope;home()});
   app.querySelectorAll('[data-fmt]').forEach(b=>b.onclick=()=>{S.fmt=b.dataset.fmt;const u=unitsOf(S.fmt);if(!u.includes(S.unit))S.unit=u[0]||'';home()});
   app.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{S.n=+b.dataset.n;home()});
@@ -256,7 +271,7 @@ function recView(){
   <div class="card"><h2>達成率・正答率とは</h2>
     <p class="sub" style="margin:0 0 6px"><b>達成率</b> = 単元の全問題(4択・入力の合計)のうち、正答した問題の割合</p>
     <p class="sub" style="margin:0 0 6px"><b>正答率</b> = 演習した問題のうち、正答した問題の割合</p>
-    <p class="sub" style="margin:0">・各問題の「最新の解答」で数えます(間違えた問題を後で正解すれば、正答になります)。<br>・正解でも「自信がないのでストック」した問題は、ストック中は正答に数えません。ストック問題にもう一度正答するとストックから外れ、正答扱いになります。</p></div>
+    <p class="sub" style="margin:0">・各問題の多様な解答や最新の解答で数えます。<br>・正解でも「自信がないのでストック」した問題は、ストック中は正答に数えません。ストック問題にもう一度正答するとストックから外れ、正答扱いになります。</p></div>
   <p style="text-align:center"><button class="link" id="reset">記録をリセットする</button></p>`;
   $('#b').onclick=home;
   $('#reset').onclick=()=>{if(confirm('正誤の記録(達成率・正答率・間違えた問題)をリセットします。ストックは残ります。よろしいですか?')){st.rec={};st.wrong=[];save();recView()}};
